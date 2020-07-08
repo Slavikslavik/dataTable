@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    
+    
+    .table {
+        font-size: 14px;
+        border-radius: 10px;
+        border-spacing: 0;
+        text-align: center;
+        border-collapse: collapse;
+        
+    }
+    .table__caption{
+        font-size: 22px;
+        background-color: wheat;
+    }
+    .table__title{
+        font-size: 22px;
+        text-align: center;
+        background-color: skyblue;
+        
+    }
+    .table__item{
+        padding: 5px;
+        border: 2px solid;
+    }
+    .table__description{
+        background-color: slategrey;
+        color: white;
+        border-style: solid;
+        border-width: 0 1px 1px 0;
+        border-color: white;
+    }
+    .table__description__item {
+        padding: 5px;
+        border: 2px solid;
+    }
+    .table_pagination_btn:focus {
+        background-color: violet;
+    }
+    
+</style>
+<body>
+    <div>
+        <table class="table">
+            <caption class="table__caption">Отделения НП</caption>
+            <tr class="table__title">
+                <th class="table__item">ID</th>
+                <th class="table__item">Название отделения</th>
+                <th class="table__item">Город отделения</th>
+                <th class="table__item">Номер отделения</th>
+            </tr>
+        </table>    
+       
+            <form class="table_form table_pagination">
+                <select class="table_select">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <input type="submit">
+                </select>
+            </form>
+        
+    </div>
+    
+    
+
+    <script>
+        let dataTable = [];
+        let table = document.querySelector('table');
+        const edpoint = 'http://api.odesseo.com.ua/warehouses?limit=400';
+
+        fetch(edpoint)
+            .then(response => response.json())
+            .then(result => {
+                console.log(result);
+                
+                dataTable = result.data;
+                //console.log(dataTable); 
+                pagination(); 
+                }); 
+            //.catch(error => alert('Oopps...'));
+
+        function pagination(){
+            let pages = dataTable.length;
+            
+            
+            let itemsONpage = +(document.querySelector('.table_select').value);
+            
+            console.log(itemsONpage);
+            
+            
+                document.querySelector('.table_form').addEventListener('submit',(event)=> {
+                    event.preventDefault();
+                itemsONpage = +(document.querySelector('.table_select').value);
+                 console.log(itemsONpage);
+                
+                 
+                });
+            
+            
+            let li_count = pages/itemsONpage;
+            //До того как выбирать нужно вывести информацию А потом уже брать класс из элемента таблицы и очищать перед пагинацией 
+            dataTable.slice(0,itemsONpage).forEach(element =>{
+                table.insertAdjacentHTML(
+                    'beforeEnd',
+                    `
+                    <tr class="table__description">
+                        <td class="table__description__item">${element.ref}</td>
+                        <td class="table__description__item">${element.name}</td>
+                            <td class="table__description__item">${element.city}</td>
+                        <td class="table__description__item">${element.number}</td>
+                    </tr>
+                    `);   
+                })            
+            
+
+
+            let paginationButtons = document.querySelector('.table_pagination');
+                
+            paginationButton();  
+              
+            function paginationButton(){
+                for(let i = 0; i < Math.ceil(li_count); i++){
+                                
+                    paginationButtons.innerHTML += `<button class="table_pagination_btn">${i+1}</button>`;
+                };  
+            };
+
+            let paginationButtons_item = document.querySelectorAll('.table_pagination_btn');
+            console.log(paginationButtons_item);
+            
+
+                for(let item of paginationButtons_item){
+                    item.addEventListener('click',function(){
+                        
+                        let page_num = +this.innerHTML;
+                        
+
+                        let start = (page_num - 1) * itemsONpage;
+                        let end = start + itemsONpage;
+                        let result_item = dataTable.slice(start, end);
+                        
+                        let doc =  document.querySelectorAll('.table__description');
+                        doc.forEach(element => {
+                            element.innerHTML = '';
+                            
+                        });
+                        
+
+                        result_item.forEach(element => {                
+                            table.insertAdjacentHTML(
+                                'beforeEnd',
+                                `
+                                <tr class="table__description">
+                                    <td class="table__description__item">${element.ref}</td>
+                                    <td class="table__description__item">${element.name}</td>
+                                    <td class="table__description__item">${element.city}</td>
+                                    <td class="table__description__item">${element.number}</td>
+                                </tr>`
+                            );  
+                        });
+                    });  
+                    
+                    
+                };
+                
+            };
+            
+                
+            
+            
+
+
+
+    </script>
+</body>
+</html>
